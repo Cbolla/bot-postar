@@ -1,8 +1,8 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTextEdit, QPushButton, QLabel, QSplitter, QTabWidget, QVBoxLayout, QHBoxLayout
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTextEdit, QPushButton, QLabel, QSplitter, QVBoxLayout, QHBoxLayout, QFileDialog, QCheckBox
+from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
-from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices
 
 app = QApplication(sys.argv)
 
@@ -11,31 +11,72 @@ window.setGeometry(100, 100, 800, 600)
 window.setWindowTitle("Postagem de Vídeos")
 
 central_widget = QWidget()
-layout = QVBoxLayout()
+layout = QHBoxLayout()
 
-# Crie abas para Instagram, YouTube e TikTok
-tab_widget = QTabWidget()
+# Crie um widget para as caixas de seleção, campos de legenda e o botão de postar
+left_widget = QWidget()
+left_layout = QVBoxLayout()
 
-# Função para criar uma aba com campos comuns
-def create_video_tab(tab_name):
-    tab = QWidget()
-    tab_layout = QVBoxLayout()
+# Adicione um rótulo "Selecione onde deseja postar"
+platform_label = QLabel("Selecione onde deseja postar")
+left_layout.addWidget(platform_label)
 
-    caption_input = QTextEdit()  # Alterado para "Legenda"
-    upload_button = QPushButton("Upload")
-    upload_button.setEnabled(False)  # O botão de upload estará desativado inicialmente
+# Crie caixas de seleção para as plataformas
+instagram_checkbox = QCheckBox("Instagram")
+youtube_checkbox = QCheckBox("YouTube")
+tiktok_checkbox = QCheckBox("TikTok")
 
-    tab_layout.addWidget(QLabel(f"Legenda do Vídeo ({tab_name}):"))
-    tab_layout.addWidget(caption_input)
-    tab_layout.addWidget(upload_button)
+# Adicione as caixas de seleção ao layout
+left_layout.addWidget(instagram_checkbox)
+left_layout.addWidget(youtube_checkbox)
+left_layout.addWidget(tiktok_checkbox)
 
-    tab.setLayout(tab_layout)
-    tab_widget.addTab(tab, tab_name)
+# Crie campos de legenda para cada plataforma
+instagram_caption = QTextEdit()
+youtube_caption = QTextEdit()
+tiktok_caption = QTextEdit()
 
-# Abas para Instagram, YouTube e TikTok
-create_video_tab("Instagram")
-create_video_tab("YouTube")
-create_video_tab("TikTok")
+# Adicione os campos de legenda ao layout
+left_layout.addWidget(QLabel("Legenda do Vídeo (Instagram):"))
+left_layout.addWidget(instagram_caption)
+left_layout.addWidget(QLabel("Legenda do Vídeo (YouTube):"))
+left_layout.addWidget(youtube_caption)
+left_layout.addWidget(QLabel("Legenda do Vídeo (TikTok):"))
+left_layout.addWidget(tiktok_caption)
+
+# Crie um botão de "Postar"
+post_button = QPushButton("Postar")
+
+# Função para lidar com a ação de postagem
+def postar_video():
+    # Verificar as plataformas selecionadas e suas respectivas legendas
+    selected_platforms = []
+    if instagram_checkbox.isChecked():
+        selected_platforms.append(("Instagram", instagram_caption.toPlainText()))
+    if youtube_checkbox.isChecked():
+        selected_platforms.append(("YouTube", youtube_caption.toPlainText()))
+    if tiktok_checkbox.isChecked():
+        selected_platforms.append(("TikTok", tiktok_caption.toPlainText()))
+
+    # Exemplo de ação de postagem
+    for platform, caption in selected_platforms:
+        print(f"Postando vídeo na plataforma {platform} com a seguinte legenda:")
+        print(caption)
+
+        # Abrir o link do Instagram se a caixa de seleção do Instagram estiver marcada
+        if platform == "Instagram":
+            instagram_url = "https://www.instagram.com/"
+            QDesktopServices.openUrl(QUrl(instagram_url))
+
+# Conecte a função ao botão de "Postar"
+post_button.clicked.connect(postar_video)
+
+# Adicione o botão de postar ao layout
+left_layout.addWidget(post_button)
+
+# Adicione o widget da esquerda ao layout
+left_widget.setLayout(left_layout)
+layout.addWidget(left_widget)
 
 # Aba de Navegador
 browser = QWebEngineView()
@@ -46,16 +87,11 @@ browser.setUrl(QUrl(url))
 
 # Use um QSplitter para ajustar o tamanho das áreas
 splitter = QSplitter(Qt.Horizontal)
-splitter.addWidget(tab_widget)
-splitter.addWidget(browser)
+splitter.addWidget(left_widget)  # Caixas de seleção, campos de legenda e botão de postar no lado esquerdo
+splitter.addWidget(browser)  # Navegador no lado direito
 
-# Adicione a barra de endereço ao layout
+# Adicione o splitter ao layout
 layout.addWidget(splitter)
-
-# Botão para ocultar ou mostrar o navegador
-show_hide_button = QPushButton("Ocultar Navegador")
-show_hide_button.clicked.connect(lambda: browser.setHidden(not browser.isHidden()))
-layout.addWidget(show_hide_button)
 
 central_widget.setLayout(layout)
 window.setCentralWidget(central_widget)
