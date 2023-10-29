@@ -1,85 +1,88 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QTextEdit, QPushButton, QLabel, QSplitter, QTabWidget, QVBoxLayout, QFileDialog
-from PyQt5.QtCore import Qt
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
-from PyQt5.QtCore import QUrl
+import tkinter as tk
+from tkinterdnd2 import DND_FILES, TkinterDnD
+from tkinter import filedialog
+import cv2
+from PIL import Image, ImageTk
+import pyautogui
 
-app = QApplication(sys.argv)
+def postar():
+    legenda = legenda_text.get("1.0", "end-1c")
+    selecionadas = [instagram_var.get(), tiktok_var.get(), youtube_var.get()]
+    
+    # Obtenha o caminho do vídeo do campo de entrada
+    video_path = video_entry.get()
 
-# Crie janelas separadas para cada aba
-class TabWindow(QMainWindow):
-    def __init__(self, tab_name, initial_url):
-        super().__init__()
-        self.setWindowTitle(f"Postagem de Vídeos ({tab_name})")
-        self.setGeometry(100, 100, 800, 600)
+    redes_sociais = [rede for i, rede in enumerate(["Instagram", "TikTok", "YouTube"]) if selecionadas[i]]
 
-        central_widget = QWidget()
-        layout = QVBoxLayout()
+    if not redes_sociais:
+        resultado_label.config(text="Selecione pelo menos uma rede social")
+    elif not video_path:
+        resultado_label.config(text="Selecione um vídeo")
+    else:
+        resultado_label.config(text=f"Legenda: {legenda}\nRedes sociais selecionadas: {', '.join(redes_sociais)}\nCaminho do vídeo: {video_path}")
+        
+        # Simular um clique em (0, 0) com o PyAutoGUI
+        pyautogui.click(0, 0)
 
-        self.caption_input = QTextEdit()  # Alterado para "Legenda"
-        layout.addWidget(self.caption_input)
 
-        self.upload_button = QPushButton("Upload")
-        self.upload_button.setEnabled(False)  # O botão de upload estará desativado inicialmente
-        self.upload_button.clicked.connect(self.upload_video)
-        layout.addWidget(self.upload_button)
+def carregar_video():
+    file_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mov")])
+    if file_path:
+        video_entry.delete(0, "end")
+        video_entry.insert(0, file_path)
+        mostrar_miniatura(file_path)
 
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
+def mostrar_miniatura(video_path):
+    cap = cv2.VideoCapture(video_path)
+    ret, frame = cap.read()
+    if ret:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.resize(frame, (240, 180))
+        photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
+        miniatura_label.config(image=photo)
+        miniatura_label.photo = photo
+    cap.release()
 
-        # Aba de Navegador
-        self.browser = QWebEngineView()
-        browser_settings = self.browser.settings()
-        browser_settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, True)
-        self.browser.setUrl(QUrl(initial_url))
-        layout.addWidget(self.browser)
+# Criar a janela principal
+app = TkinterDnD.Tk()
+app.title("Postagem em Redes Sociais")
 
-    def upload_video(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.ReadOnly
-        file_name, _ = QFileDialog.getOpenFileName(self, "Selecione o Vídeo", "", "Arquivos de Vídeo (*.mp4 *.avi);;Todos os Arquivos (*)", options=options)
-        if file_name:
-            # Aqui você pode adicionar a lógica de upload do vídeo
-            print(f"Vídeo selecionado ({self.windowTitle()}):", file_name)
-            self.upload_button.setEnabled(True)  # Habilite o botão após selecionar um vídeo
+# Variáveis de controle para os checkboxes
+instagram_var = tk.IntVar()
+tiktok_var = tk.IntVar()
+youtube_var = tk.IntVar()
 
-# Crie abas para Instagram, YouTube e TikTok
-tab_widget = QTabWidget()
-tab_widget.addTab(TabWindow("Instagram", "https://www.instagram.com/"), "Instagram")
-tab_widget.addTab(TabWindow("YouTube", "https://www.youtube.com/"), "YouTube")
-tab_widget.addTab(TabWindow("TikTok", "https://www.tiktok.com/"), "TikTok")
+# Checkboxes para redes sociais
+instagram_checkbox = tk.Checkbutton(app, text="Instagram", variable=instagram_var)
+tiktok_checkbox = tk.Checkbutton(app, text="TikTok", variable=tiktok_var)
+youtube_checkbox = tk.Checkbutton(app, text="YouTube", variable=youtube_var)
 
-window = QMainWindow()
-window.setGeometry(100, 100, 800, 600)
-window.setWindowTitle("Postagem de Vídeos")
+# Labels e campos de entrada
+legenda_label = tk.Label(app, text="Legenda do vídeo:")
+legenda_text = tk.Text(app, height=5, width=30)
+video_label = tk.Label(app, text="Selecionar vídeo:")
+video_entry = tk.Entry(app, width=40, textvariable=tk.StringVar())
 
-layout = QVBoxLayout()
+# Miniatura do vídeo
+miniatura_label = tk.Label(app, text="Miniatura do vídeo")
+miniatura_label.pack()
 
-# Use um QSplitter para dividir a tela em duas partes
-splitter = QSplitter(Qt.Vertical)
+# Botões
+carregar_button = tk.Button(app, text="Carregar Vídeo", command=carregar_video)
+post_button = tk.Button(app, text="Postar", command=postar)
+resultado_label = tk.Label(app, text="")
 
-# Crie um widget para as legendas e abas
-left_widget = QWidget()
-left_layout = QVBoxLayout()
+# Posicionamento dos elementos na interface
+instagram_checkbox.pack()
+tiktok_checkbox.pack()
+youtube_checkbox.pack()
+legenda_label.pack()
+legenda_text.pack()
+video_label.pack()
+video_entry.pack()
+carregar_button.pack()
+post_button.pack()
+resultado_label.pack()
 
-# Adicione suas legendas e abas aqui (de acordo com o seu design)
-left_layout.addWidget(QLabel("Legendas"))
-left_layout.addWidget(tab_widget)
-
-left_widget.setLayout(left_layout)
-
-# Adicione o widget da esquerda ao splitter com a proporção de 30%
-splitter.addWidget(left_widget)
-splitter.setSizes([1, 7])  # Isso divide a tela em 30% e 70%
-
-# Adicione o navegador (QWebEngineView) ao splitter no lado direito
-splitter.addWidget(QWebEngineView())
-
-layout.addWidget(splitter)
-
-central_widget = QWidget()
-central_widget.setLayout(layout)
-window.setCentralWidget(central_widget)
-
-window.show()
-sys.exit(app.exec_())
+# Iniciar a aplicação
+app.mainloop()
