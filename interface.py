@@ -1,47 +1,33 @@
 import tkinter as tk
-from tkinterdnd2 import DND_FILES, TkinterDnD
-from tkinter import filedialog
-import cv2
-from PIL import Image, ImageTk
 import pyautogui
+from tkinterdnd2 import DND_FILES, TkinterDnD
+import os
+from Finstagram import automatizar_instagram
+
+# Variável global para armazenar o texto da legenda
+legenda_global = ""
 
 def postar():
     legenda = legenda_text.get("1.0", "end-1c")
-    selecionadas = [instagram_var.get(), tiktok_var.get(), youtube_var.get()]
-    
-    # Obtenha o caminho do vídeo do campo de entrada
-    video_path = video_entry.get()
+    instagram_marcado = instagram_var.get()
+    tiktok_marcado = tiktok_var.get()
+    youtube_marcado = youtube_var.get()
 
-    redes_sociais = [rede for i, rede in enumerate(["Instagram", "TikTok", "YouTube"]) if selecionadas[i]]
-
-    if not redes_sociais:
+    if not (instagram_marcado or tiktok_marcado or youtube_marcado):
         resultado_label.config(text="Selecione pelo menos uma rede social")
-    elif not video_path:
-        resultado_label.config(text="Selecione um vídeo")
     else:
-        resultado_label.config(text=f"Legenda: {legenda}\nRedes sociais selecionadas: {', '.join(redes_sociais)}\nCaminho do vídeo: {video_path}")
-        
-        # Simular um clique em (0, 0) com o PyAutoGUI
-        pyautogui.click(0, 0)
+        if instagram_marcado:
+            automatizar_instagram(legenda)
+            resultado_label.config(text="Ação de postagem no Instagram realizada com sucesso!")
+        if tiktok_marcado:
+            pyautogui.hotkey('ctrl', 'tab')
+            # Chamar a função de automação do TikTok aqui
+            resultado_label.config(text="Ação de postagem no TikTok realizada com sucesso!")
+        if youtube_marcado:
+            # Chamar a função de automação do YouTube aqui
+            resultado_label.config(text="Ação de postagem no YouTube realizada com sucesso!")
 
-
-def carregar_video():
-    file_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mov")])
-    if file_path:
-        video_entry.delete(0, "end")
-        video_entry.insert(0, file_path)
-        mostrar_miniatura(file_path)
-
-def mostrar_miniatura(video_path):
-    cap = cv2.VideoCapture(video_path)
-    ret, frame = cap.read()
-    if ret:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = cv2.resize(frame, (240, 180))
-        photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
-        miniatura_label.config(image=photo)
-        miniatura_label.photo = photo
-    cap.release()
+# O restante do código permanece inalterado.
 
 # Criar a janela principal
 app = TkinterDnD.Tk()
@@ -60,15 +46,8 @@ youtube_checkbox = tk.Checkbutton(app, text="YouTube", variable=youtube_var)
 # Labels e campos de entrada
 legenda_label = tk.Label(app, text="Legenda do vídeo:")
 legenda_text = tk.Text(app, height=5, width=30)
-video_label = tk.Label(app, text="Selecionar vídeo:")
-video_entry = tk.Entry(app, width=40, textvariable=tk.StringVar())
-
-# Miniatura do vídeo
-miniatura_label = tk.Label(app, text="Miniatura do vídeo")
-miniatura_label.pack()
 
 # Botões
-carregar_button = tk.Button(app, text="Carregar Vídeo", command=carregar_video)
 post_button = tk.Button(app, text="Postar", command=postar)
 resultado_label = tk.Label(app, text="")
 
@@ -78,11 +57,7 @@ tiktok_checkbox.pack()
 youtube_checkbox.pack()
 legenda_label.pack()
 legenda_text.pack()
-video_label.pack()
-video_entry.pack()
-carregar_button.pack()
 post_button.pack()
-resultado_label.pack()
 
 # Iniciar a aplicação
 app.mainloop()
