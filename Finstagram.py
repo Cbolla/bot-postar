@@ -5,7 +5,7 @@ import os
 # Função de automação para o Instagram
 def automatizar_instagram(legenda_global):
     # Defina o tempo limite para procurar a imagem (30 segundos)
-    tempo_limite = 30
+    tempo_limite = 50
     start_time = time.time()
 
     while time.time() - start_time < tempo_limite:
@@ -48,10 +48,10 @@ def automatizar_instagram(legenda_global):
 
     # Clicando em avançar
     time.sleep(10)
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
-    pyautogui.hotkey('tab')
-    time.sleep(1)
+    for i in range(2):
+        pyautogui.hotkey('tab')
+        time.sleep(0.5)
+
     pyautogui.hotkey('enter')
     time.sleep(0.5)
 
@@ -66,35 +66,23 @@ def automatizar_instagram(legenda_global):
     # Fim
 
     # Novo reels escrever legenda
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
+    for i in range(4):
+        pyautogui.hotkey('tab')
+        time.sleep(0.5)
+
 
     pyautogui.write(legenda_global)
-    # compartilhar 
 
-    pyautogui.hotkey('tab')
-    time.sleep(0.5) 
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
-    pyautogui.hotkey('tab')
-    time.sleep(0.5)
-    pyautogui.hotkey('tab') 
-    time.sleep(0.5)
+    # compartilhar 
+    for i in range(6):
+        pyautogui.hotkey('tab')
+        time.sleep(0.5) 
+    
     # pyautogui.hotkey('enter')
     time.sleep(0.5)
 
 
 
 if __name__ == "__main__":
-    legenda_global = "Esta é uma legenda de exemplo"  # Substitua pela legenda desejada
+    legenda_global = ""  # Substitua pela legenda desejada
     automatizar_instagram(legenda_global)
